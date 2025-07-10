@@ -8,10 +8,19 @@ COUNTRY = "PK"
 
 def get_weather():
     url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY},{COUNTRY}&appid={WEATHER_API_KEY}&units=metric"
-    response = requests.get(url).json()
-    temp = response["main"]["temp"]
-    desc = response["weather"][0]["description"].capitalize()
+    response = requests.get(url)
+    data = response.json()
+
+    # DEBUG PRINT — shows full response if something is wrong
+    print("🔎 API Response:", data)
+
+    if "main" not in data:
+        raise Exception(f"❌ API error: {data.get('message', 'Unknown error')}")
+
+    temp = data["main"]["temp"]
+    desc = data["weather"][0]["description"].capitalize()
     return f"📍 Weather in {CITY} today: **{temp}°C**, {desc}"
+
 
 def send_to_discord(message):
     data = {"content": message}
