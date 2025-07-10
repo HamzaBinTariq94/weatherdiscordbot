@@ -3,32 +3,25 @@ import requests
 
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
-CITY = "Islamabad"
-COUNTRY = "PK"
 
 def get_weather():
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY},{COUNTRY}&appid={WEATHER_API_KEY}&units=metric"
+    url = f"http://api.weatherstack.com/current?access_key={WEATHER_API_KEY}&query=Islamabad"
     response = requests.get(url)
     data = response.json()
 
-    # DEBUG PRINT — shows full response if something is wrong
-    print("🔎 API Response:", data)
+    if "current" not in data:
+        raise Exception(f"❌ API error: {data.get('error', {}).get('info', 'Unknown error')}")
 
-    if "main" not in data:
-        raise Exception(f"❌ API error: {data.get('message', 'Unknown error')}")
-
-    temp = data["main"]["temp"]
-    desc = data["weather"][0]["description"].capitalize()
-    return f"📍 Weather in {CITY} today: **{temp}°C**, {desc}"
-
+    temp = data["current"]["temperature"]
+    description = data["current"]["weather_descriptions"][0]
+    return f"📍 Weather in Islamabad today: **{temp}°C**, {description}"
 
 def send_to_discord(message):
-    data = {"content": message}
-    res = requests.post(WEBHOOK_URL, json=data)
+    res = requests.post(WEBHOOK_URL, json={"content": message})
     if res.status_code == 204:
-        print("Message sent successfully!")
+        print("✅ Message sent to Discord!")
     else:
-        print(f"Failed to send message: {res.status_code}")
+        print(f"❌ Discord send failed: {res.status_code}")
 
 if __name__ == "__main__":
     msg = get_weather()
