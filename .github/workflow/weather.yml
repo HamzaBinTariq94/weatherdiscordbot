@@ -1,0 +1,29 @@
+name: Daily Weather to Discord
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 7 AM Pakistan time (UTC+5)
+  workflow_dispatch:
+
+jobs:
+  send-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run weather script
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+        run: python send_weather.py
